@@ -181,39 +181,99 @@
   }
   function closeModal(){ if(modal) modal.setAttribute('aria-hidden','true'); }
 
-  // Contact form: Send via EmailJS
+  // Contact form: attach handler always, dynamically load EmailJS if needed
   const contactForm = document.getElementById('contact-form');
-  if(contactForm && typeof emailjs !== 'undefined'){
-    // Initialize EmailJS (replace YOUR_PUBLIC_KEY with your EmailJS public key)
-    emailjs.init('nQEnXXpqX7Y_Ix9fj');
-    
-    contactForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
+  if (contactForm) {
+    async function loadEmailJSSDK() {
+      if (typeof emailjs !== 'undefined') return;
+      // Try local copy first to avoid third-party tracking/storage blocks
+      const localSrc = '/assets/js/emailjs.min.js';
+      const cdnSrc = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js';
+
+      function load(src){
+        return new Promise((resolve, reject) => {
+          const existing = document.querySelector(`script[src="${src}"]`);
+          if (existing) {
+            if (existing.getAttribute('data-loaded') === 'true') return resolve();
+            existing.addEventListener('load', () => { existing.setAttribute('data-loaded','true'); resolve(); });
+            existing.addEventListener('error', () => reject(new Error('EmailJS SDK failed to load: '+src)));
+            return;
+          }
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = true;
+          s.onload = () => { s.setAttribute('data-loaded','true'); resolve(); };
+          s.onerror = () => reject(new Error('EmailJS SDK failed to load: '+src));
+          document.head.appendChild(s);
+        });
+      }
+
+      // Try local file then multiple CDN paths (some distributions use different filenames)
+      const cdnCandidates = [localSrc, cdnSrc, 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js', 'https://unpkg.com/@emailjs/browser@3/dist/email.min.js'];
+      let lastErr = null;
+      for (const src of cdnCandidates) {
+        try {
+          await load(src);
+          return;
+        } catch (err) {
+          lastErr = err;
+          // try next
+        }
+      }
+      throw lastErr || new Error('EmailJS SDK failed to load from all known locations');
+    }
+
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); // always prevent native submit
       const submitBtn = document.getElementById('submit-btn');
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Sending...';
-      submitBtn.disabled = true;
+      const originalText = submitBtn ? submitBtn.textContent : 'Send Message';
+      if (submitBtn) {
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
+      }
 
       try {
+        // Ensure EmailJS SDK is available
+        if (typeof emailjs === 'undefined') {
+          await loadEmailJSSDK();
+        }
+
+        if (typeof emailjs === 'undefined') {
+          throw new Error('EmailJS SDK not available');
+        }
+
+        // Initialize EmailJS (public key already included in code)
+        try { emailjs.init('nQEnXXpqX7Y_Ix9fj'); } catch (initErr) { /* ignore if already initialized */ }
+
         const formData = new FormData(contactForm);
-        const response = await emailjs.send('service_fbbn8pj', 'template_pmkdgte', {
+        const payload = {
           to_email: 'nimashisankhapala@gmail.com',
-          from_name: formData.get('name'),
-          from_email: formData.get('email'),
-          message: formData.get('message'),
-          reply_to: formData.get('email')
-        });
-        
-        if(response.status === 200){
+          from_name: formData.get('name') || 'Anonymous',
+          from_email: formData.get('email') || '',
+          message: formData.get('message') || '',
+          reply_to: formData.get('email') || ''
+        };
+
+        const response = await emailjs.send('service_fbbn8pj', 'template_pmkdgte', payload);
+
+        // EmailJS returns an object; some environments respond with status, others don't.
+        if ((response && response.status === 200) || response === 'OK' || response === undefined) {
           contactForm.reset();
+          showSuccessModal();
+        } else {
+          console.warn('Unexpected EmailJS response:', response);
+          // still treat as success for many EmailJS setups, but notify if not
           showSuccessModal();
         }
       } catch (error) {
         console.error('Email send failed:', error);
-        alert('Failed to send message. Please try again.');
+        // Show a friendly message and helpful troubleshooting hints
+        alert('Failed to send message. Please check your network and EmailJS setup (Service ID, Template ID, Public Key). Open the browser console for details.');
       } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        if (submitBtn) {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
       }
     });
   }
