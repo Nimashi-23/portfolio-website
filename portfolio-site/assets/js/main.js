@@ -254,7 +254,7 @@
           reply_to: formData.get('email') || ''
         };
 
-        const response = await emailjs.send('service_fbbn8pj', 'template_pmkdgte', payload);
+        const response = await emailjs.send('service_al3xyet', 'template_pmkdgte', payload);
 
         // EmailJS returns an object; some environments respond with status, others don't.
         if ((response && response.status === 200) || response === 'OK' || response === undefined) {
@@ -267,8 +267,10 @@
         }
       } catch (error) {
         console.error('Email send failed:', error);
-        // Show a friendly message and helpful troubleshooting hints
-        alert('Failed to send message. Please check your network and EmailJS setup (Service ID, Template ID, Public Key). Open the browser console for details.');
+        // Try to extract a helpful message from EmailJS response wrapper
+        let errText = (error && (error.text || error.message)) ? (error.text || error.message) : String(error);
+        // Show specific error if available, otherwise a generic troubleshooting hint
+        alert('Failed to send message: ' + errText + '\n\nCheck Service ID / Template ID / Public Key and EmailJS dashboard email history.');
       } finally {
         if (submitBtn) {
           submitBtn.textContent = originalText;
