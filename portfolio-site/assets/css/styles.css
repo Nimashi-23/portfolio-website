@@ -230,6 +230,12 @@ body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:#0f1
   .floating-one,.floating-two,.floating-three{position:static;display:inline-flex;margin:.35rem .35rem 0 0}
   .hero-photo-wrap{max-width:360px}
   .stats-grid,.featured-grid,.achievement-grid{grid-template-columns:1fr}
+  /* Tablet footer responsive */
+  .footer-top{flex-direction:column;gap:1.2rem;align-items:center}
+  .footer-left{text-align:center;margin-left:0}
+  .footer-links-wrap{margin-left:0;align-self:center;text-align:center}
+  .footer-links{justify-content:center;margin-left:0}
+  .footer-socials{justify-content:center}
 }
 
 @media(max-width:640px){
@@ -237,6 +243,16 @@ body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:#0f1
   .home-title{font-size:2rem}
   .hero-actions,.mini-stats,.icon-grid,.project-actions,.badge-row,.footer-links{gap:.5rem}
   .stat-pill{min-width:unset;flex:1 1 30%}
+  /* Mobile footer responsive */
+  .footer-top{flex-direction:column;gap:1.5rem;align-items:center;text-align:center}
+  .footer-left{margin-left:0}
+  .footer-links-wrap{margin-left:0;align-self:center}
+  .footer-links{justify-content:center;margin-left:0}
+  .footer-socials{justify-content:center}
+  .connect-title{font-size:1.4rem}
+  .footer-note{font-size:0.9rem}
+  .footer-links-title{font-size:1rem}
+  .footer-copy-wrap{text-align:center;padding:0}
 }
 
 /* Home hero specific styles */
