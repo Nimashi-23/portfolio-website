@@ -181,27 +181,64 @@
   }
   function closeModal(){ if(modal) modal.setAttribute('aria-hidden','true'); }
 
-  // Contact form: build a mailto link from form values and open user's email client
-  const contactForm = document.querySelector('.contact-form');
-  if(contactForm){
-    contactForm.addEventListener('submit', (e)=>{
+  // Contact form: Send via EmailJS
+  const contactForm = document.getElementById('contact-form');
+  if(contactForm && typeof emailjs !== 'undefined'){
+    // Initialize EmailJS (replace YOUR_PUBLIC_KEY with your EmailJS public key)
+    emailjs.init('nQEnXXpqX7Y_Ix9fj');
+    
+    contactForm.addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const formData = new FormData(contactForm);
-      const name = formData.get('name') || 'Anonymous';
-      const fromEmail = formData.get('email') || '';
-      const message = formData.get('message') || '';
-      const to = 'nimashisankhapala@gmail.com';
-      const subject = `Portfolio message from ${name}`;
-      const bodyLines = [
-        `Name: ${name}`,
-        `Email: ${fromEmail}`,
-        '',
-        message
-      ];
-      const body = bodyLines.join('\r\n');
-      const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      // Open mail client with prefilled message
-      window.location.href = mailto;
+      const submitBtn = document.getElementById('submit-btn');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Sending...';
+      submitBtn.disabled = true;
+
+      try {
+        const formData = new FormData(contactForm);
+        const response = await emailjs.send('service_fbbn8pj', 'template_pmkdgte', {
+          to_email: 'nimashisankhapala@gmail.com',
+          from_name: formData.get('name'),
+          from_email: formData.get('email'),
+          message: formData.get('message'),
+          reply_to: formData.get('email')
+        });
+        
+        if(response.status === 200){
+          contactForm.reset();
+          showSuccessModal();
+        }
+      } catch (error) {
+        console.error('Email send failed:', error);
+        alert('Failed to send message. Please try again.');
+      } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
     });
+  }
+
+  // Success modal functions
+  function showSuccessModal(){
+    const modal = document.getElementById('success-modal');
+    const closeBtn = document.getElementById('success-modal-close');
+    if(modal) modal.setAttribute('aria-hidden', 'false');
+    
+    if(closeBtn){
+      closeBtn.addEventListener('click', ()=>{
+        if(modal) modal.setAttribute('aria-hidden', 'true');
+      });
+    }
+    
+    if(modal){
+      modal.addEventListener('click', (e)=>{
+        if(e.target === modal) modal.setAttribute('aria-hidden', 'true');
+      });
+    }
+
+    // Auto close after 5 seconds
+    setTimeout(()=>{
+      if(modal) modal.setAttribute('aria-hidden', 'true');
+    }, 5000);
   }
 })();

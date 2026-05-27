@@ -220,11 +220,11 @@
           <h2>Let's connect.</h2>
         </div>
         <div class="contact-grid contact-home-grid">
-          <form class="contact-form contact-card" action="mailto:nimashisankhapala@gmail.com" method="post" enctype="text/plain">
-            <label>Name <input type="text" name="name" placeholder="Your name" required></label>
-            <label>Email <input type="email" name="email" placeholder="Your email" required></label>
-            <label>Message <textarea name="message" rows="5" placeholder="Tell me about your internship, project, or collaboration idea." required></textarea></label>
-            <div><button class="btn glow-btn" type="submit">Send Message</button></div>
+          <form class="contact-form contact-card" id="contact-form">
+            <label>Name <input type="text" name="name" id="name" placeholder="Your name" required></label>
+            <label>Email <input type="email" name="email" id="email" placeholder="Your email" required></label>
+            <label>Message <textarea name="message" id="message" rows="5" placeholder="Tell me about your internship, project, or collaboration idea." required></textarea></label>
+            <div><button class="btn glow-btn" type="submit" id="submit-btn">Send Message</button></div>
           </form>
           <aside class="contact-info">
             <div class="contact-card email-card">
@@ -287,6 +287,20 @@
     </div>
   </footer>
 
+  <!-- Success Modal -->
+  <div id="success-modal" class="modal" aria-hidden="true">
+    <div class="modal-content success-modal-content">
+      <button class="modal-close" id="success-modal-close" aria-label="Close">&times;</button>
+      <div class="success-modal-body">
+        <div class="success-icon">✓</div>
+        <h3>Message Sent!</h3>
+        <p>Thank you for reaching out. I'll get back to you as soon as possible.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EmailJS Script -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>
